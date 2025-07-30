@@ -1,5 +1,5 @@
 // lib/firebase.ts
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -11,5 +11,7 @@ const firebaseConfig = {
   appId: "1:381318908090:web:f08ca7524190472ca1da83"
 };
 
-const app = initializeApp(firebaseConfig);
+// Prevent re-initialization during hot reloads
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
 export const auth = getAuth(app);
