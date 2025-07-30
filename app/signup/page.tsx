@@ -30,6 +30,8 @@ export default function SignupPage() {
     setError("")
     setLoading(true)
 
+    console.log("Submitting signup form with:", formData)
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match")
       setLoading(false)
@@ -42,28 +44,32 @@ export default function SignupPage() {
       return
     }
 
-    // Check if user already exists
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         formData.email,
         formData.password
       )
-  
-    // Optional: Save full name to Firebase Auth profile
-    await updateProfile(userCredential.user, {
-      displayName: formData.name,
-    })
 
-    // Redirect to profile setup (or dashboard)
-    router.push("/profile-setup")
-  } catch (err: any) {
-    if (err.code === "auth/email-already-in-use") {
-    setError("An account with this email already exists. Please sign in instead.")
-    } else {
-      setError(err.message)
+      console.log("✅ Account created!", userCredential)
+
+      await updateProfile(userCredential.user, {
+        displayName: formData.name,
+      })
+
+      console.log("✅ Profile updated. Redirecting...")
+      router.push("/profile-setup")
+    } catch (err: any) {
+      console.error("❌ Signup error:", err)
+
+      if (err.code === "auth/email-already-in-use") {
+        setError("An account with this email already exists. Please sign in instead.")
+      } else {
+        setError(err.message)
+      }
+
+      setLoading(false)
     }
-  }
   }
 
   return (
@@ -140,12 +146,4 @@ export default function SignupPage() {
 
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
-            <Link href="/login" className="text-blue-600 hover:underline">
-              Sign in
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
+            <Link href="/log
