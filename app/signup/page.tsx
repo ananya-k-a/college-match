@@ -1,5 +1,7 @@
 "use client"
 
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 import type React from "react"
 
 import { useState } from "react"
@@ -41,32 +43,27 @@ export default function SignupPage() {
     }
 
     // Check if user already exists
-    const existingUser = localStorage.getItem("user")
-    if (existingUser) {
-      const userData = JSON.parse(existingUser)
-      if (userData.email === formData.email) {
-        setError("An account with this email already exists. Please sign in instead.")
-        setLoading(false)
-        return
-      }
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      )
+  
+    // Optional: Save full name to Firebase Auth profile
+    await updateProfile(userCredential.user, {
+      displayName: formData.name,
+    })
+
+    // Redirect to profile setup (or dashboard)
+    router.push("/profile-setup")
+  } catch (err: any) {
+    if (err.code === "auth/email-already-in-use") {
+    setError("An account with this email already exists. Please sign in instead.")
+    } else {
+      setError(err.message)
     }
-
-    // Simulate API call
-    setTimeout(() => {
-      const userData = {
-        id: Date.now().toString(),
-        name: formData.name,
-        email: formData.email,
-        password: formData.password, // In production, this should be hashed
-        verificationKey: Math.random().toString(36).substring(2, 15),
-        profileComplete: false,
-      }
-
-      localStorage.setItem("user", JSON.stringify(userData))
-      localStorage.setItem("isAuthenticated", "true")
-      setLoading(false)
-      router.push("/profile-setup")
-    }, 1500)
+  }
   }
 
   return (
